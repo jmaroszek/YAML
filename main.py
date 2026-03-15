@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 import config
 from utils import setup_logger, backup_file

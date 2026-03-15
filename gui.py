@@ -1,7 +1,10 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import re
-import os
+import ast
+import subprocess
+import sys
+import ctypes
 from pathlib import Path
 
 # Assuming gui.py is in the same directory as config.py
@@ -34,7 +37,6 @@ def load_config():
     config['PROPERTY_VALUE'] = ""
     if prop_val != "None":
         try:
-            import ast
             parts = ast.literal_eval(prop_val)
             if isinstance(parts, tuple) and len(parts) == 2:
                 config['PROPERTY_KEY'] = str(parts[0])
@@ -234,8 +236,6 @@ class ConfigGUI:
 
     def run_main(self):
         self.save()
-        import subprocess
-        import sys
         main_script = Path(__file__).parent / "main.py"
         if not main_script.exists():
             messagebox.showerror("Error", f"main.py not found at {main_script}")
@@ -285,7 +285,6 @@ class ConfigGUI:
 
 if __name__ == "__main__":
     try:
-        import ctypes
         ctypes.windll.shcore.SetProcessDpiAwareness(1)
     except Exception:
         pass
