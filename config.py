@@ -1,9 +1,9 @@
 from pathlib import Path
 
-OBSIDIAN_ROOT = Path(r"C:\Users\jonah\Documents\Obsidian")
-TARGET_DIR = Path(r"Tests\Test")
-OPERATION = "remove"
-TAG = "My-Sweet-Tag"
+OBSIDIAN_ROOT = Path("Root") # absolute path
+TARGET_DIR = Path("Folder") # relative to OBSIDIAN_ROOT
+OPERATION = "add"
+TAG = None
 PROPERTY = None
 RECURSIVE = False
 DRY_RUN = False
