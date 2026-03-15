@@ -9,7 +9,7 @@ import shutil
 import logging
 from datetime import datetime
 
-def setup_logger(log_dir):
+def setup_logger(log_dir, operation="run", target_folder="", dry_run=False):
     """
     Sets up a logger that creates a new log file for each run
     and keeps only the 5 most recent log files in the directory.
@@ -31,7 +31,18 @@ def setup_logger(log_dir):
             pass
             
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_file = os.path.join(log_dir, f"run_{timestamp}.log")
+    
+    parts = []
+    if dry_run:
+        parts.append("DryRun")
+    parts.append(str(operation))
+    if target_folder:
+        clean_folder = str(target_folder).replace("\\", "_").replace("/", "_").replace(" ", "_")
+        parts.append(clean_folder)
+    parts.append(timestamp)
+    
+    log_name = "_".join(parts) + ".log"
+    log_file = os.path.join(log_dir, log_name)
     
     logger = logging.getLogger("ObsidianYAML")
     logger.setLevel(logging.INFO)

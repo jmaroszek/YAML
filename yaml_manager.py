@@ -59,7 +59,7 @@ def parse_frontmatter_and_body(content):
             
     return "", content
 
-def process_frontmatter(content, operation=None, tag=None, property_pair=None):
+def process_frontmatter(content, operation=None, tag=None, property_pair=None, remove_all_tags=False, remove_all_props=False):
     """
     Reads the full markdown string, modifies frontmatter, and returns the modified string.
     """
@@ -86,6 +86,15 @@ def process_frontmatter(content, operation=None, tag=None, property_pair=None):
         else:
             standardized_data[k] = v
     data = standardized_data
+
+    # Mass Removals
+    if remove_all_tags:
+        data.pop('tags', None)
+        
+    if remove_all_props:
+        keys_to_clear = [k for k in data.keys() if k not in ('aliases', 'tags')]
+        for k in keys_to_clear:
+            data.pop(k, None)
 
     # 2. Add/Remove Tag
     if tag:
@@ -137,7 +146,9 @@ def process_frontmatter(content, operation=None, tag=None, property_pair=None):
         elif operation == 'remove':
             existing_val = data.get(p_key)
             if existing_val is not None:
-                if isinstance(existing_val, list):
+                if not prop_val:
+                    data.pop(p_key, None)
+                elif isinstance(existing_val, list):
                     t_existing = title_case(existing_val)
                     if t_val in t_existing:
                         t_existing.remove(t_val)

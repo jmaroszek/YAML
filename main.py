@@ -5,11 +5,30 @@ from utils import setup_logger, backup_file
 from yaml_manager import process_frontmatter
 
 def main():
-    logger = setup_logger(config.LOG_DIR)
-    
     target_path = config.TARGET_DIR
     if not target_path.is_absolute():
         target_path = config.OBSIDIAN_ROOT / target_path
+
+    operation_parts = [config.OPERATION.capitalize()]
+    
+    if getattr(config, 'REMOVE_ALL_TAGS', False):
+        operation_parts.append("AllTags")
+    elif config.TAG and config.OPERATION.lower() in ["add", "remove"]:
+        operation_parts.append("Tag")
+        
+    if getattr(config, 'REMOVE_ALL_PROPERTIES', False):
+        operation_parts.append("AllProps")
+    elif config.PROPERTY and config.OPERATION.lower() in ["add", "remove"]:
+        operation_parts.append("Property")
+        
+    full_operation = "_".join(operation_parts)
+
+    logger = setup_logger(
+        config.LOG_DIR,
+        operation=full_operation,
+        target_folder=target_path.name,
+        dry_run=getattr(config, 'DRY_RUN', False)
+    )
 
     logger.info("=========================================")
     logger.info("Starting Obsidian YAML Manager")
@@ -53,7 +72,9 @@ def main():
                 content,
                 operation=config.OPERATION,
                 tag=config.TAG,
-                property_pair=config.PROPERTY
+                property_pair=config.PROPERTY,
+                remove_all_tags=getattr(config, 'REMOVE_ALL_TAGS', False),
+                remove_all_props=getattr(config, 'REMOVE_ALL_PROPERTIES', False)
             )
             
             if content != new_content:

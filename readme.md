@@ -1,16 +1,64 @@
-# Obsidian YAML Manager Configuration
+# Obsidian YAML Manager
 
-This repository contains a script for managing YAML frontmatter in Obsidian markdown files. The behavior of the script is configured using parameters defined in `config.py`.
+A robust Python utility and GUI application for bulk managing YAML frontmatter (tags and properties) in Obsidian markdown files.
 
-## Parameters Explained
+## Features
 
-* **`OBSIDIAN_ROOT`**: (Path object) The base directory for your Obsidian vault. This specifies the root location for resolving relative paths.
-* **`TARGET_DIR`**: (Path object) The directory containing the markdown files to process. This can be an absolute path or a path relative to `OBSIDIAN_ROOT`.
-* **`OPERATION`**: (String) The kind of change you wish to apply to the frontmatter. Valid options are `"add"` or `"remove"`.
-* **`TAG`**: (String or None) The tag string to add or remove from the files in `TARGET_DIR`. Can be set to `None` if you only want to operate on a property.
-* **`PROPERTY`**: (Tuple or None) The property to add or remove, defined as a key-value tuple. Example: `("property", "value")`. Set to `None` if you only want to operate on a tag.
-* **`RECURSIVE`**: (Boolean) When set to `True`, the script will search for and process markdown files in all subdirectories of `TARGET_DIR` recursively.
-* **`DRY_RUN`**: (Boolean) A safety mechanism. If `True`, the script will merely print out and log the intended changes but will *not* actually modify any files.
-* **`BACKUP`**: (Boolean) When `True`, the script will create copies of the original markdown files in the folder specified by `BACKUP_DIR` before modifying them.
-* **`BACKUP_DIR`**: (String) The path to the folder where backups will be stored (used if `BACKUP` is `True`).
-* **`LOG_DIR`**: (String) The path to the folder where operation logs are saved.
+- **Bulk Add/Remove**: Quickly add or remove tags and properties across multiple files.
+- **Mass Removal**: Integrated support for clearing all tags or all properties from target files.
+- **Recursive Processing**: Option to traverse subdirectories for vault-wide updates.
+- **Safety First**: Includes a "Dry Run" mode to preview changes and automatic "Backups" before execution.
+- **Clean & Organize**: Automatically title-cases, deduplicates, and alphabetizes your frontmatter.
+- **Format Preservation**: Powered by `ruamel.yaml` to ensure your markdown comments and formatting remain intact.
+- **GUI & CLI**: User-friendly graphical interface or powerful command-line script.
+
+## Getting Started
+
+### Installation
+
+1. Ensure you have Python or Conda installed.
+2. Create and activate the environment using the provided `environment.yml`:
+   ```bash
+   conda env create -f environment.yml
+   conda activate obsidian-yaml
+   ```
+
+### Running the GUI
+
+The easiest way to work with the manager is via the GUI:
+```bash
+python gui.py
+```
+From the GUI, you can browse for folders, select actions, toggle safety flags, and execute the manager with a single click.
+
+### Running via CLI
+
+You can also run the script directly from the command line after adjusting `config.py`:
+```bash
+python main.py
+```
+
+## ⚙️ Configuration (`config.py`)
+
+The behavior of the script is controlled by these parameters. They are mirrored in the GUI application for easy access.
+
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `OBSIDIAN_ROOT` | `Path` | The absolute base directory of your Obsidian vault. |
+| `TARGET_DIR` | `Path` | The folder to process (relative to `OBSIDIAN_ROOT` or absolute). |
+| `OPERATION` | `String` | Use `"add"`, `"remove"`, or `"clean"`. |
+| `TAG` | `String` | The specific tag to add or remove (optional). |
+| `PROPERTY` | `Tuple` | The property to target as `("key", "value")` (optional). |
+| `RECURSIVE` | `Bool` | Whether to process all subdirectories. |
+| `DRY_RUN` | `Bool` | If `True`, shows planned changes in logs without modifying files. |
+| `BACKUP` | `Bool` | If `True`, creates a backup of files before modification. |
+| `BACKUP_DIR` | `String` | Directory name for stored backups. |
+| `LOG_DIR` | `String` | Directory name for operation logs. |
+| `REMOVE_ALL_TAGS` | `Bool` | If `True`, logic will wipe all tags from target files. |
+| `REMOVE_ALL_PROPERTIES` | `Bool` | If `True`, logic will wipe all properties (excluding aliases/tags) from target files. |
+
+## 🛠️ Development
+
+- **Tests**: Run unit tests using `pytest` from the root directory.
+- **Logs**: Operation logs are stored in the `/Logs` folder to keep track of every change.
+- **Backups**: If enabled, original files are safely mirrored in the `/Backups` directory.
