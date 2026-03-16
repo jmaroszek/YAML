@@ -146,9 +146,25 @@ class ConfigGUI:
 
         self.config = load_config()
 
+        obs_root_str = self.config.get('OBSIDIAN_ROOT', '').replace('\\', '/').replace('//', '/')
+        target_str = self.config.get('TARGET_DIR', '').replace('\\', '/').replace('//', '/')
+        
+        self.obsidian_root_var = tk.StringVar(value=obs_root_str)
+        
+        obs_root_path = Path(obs_root_str) if obs_root_str else None
+        target_path = Path(target_str) if target_str else None
+        
+        display_target = target_str
+        if obs_root_path and target_path:
+            try:
+                display_target = target_path.relative_to(obs_root_path).as_posix()
+                if display_target == '.':
+                    display_target = ""
+            except ValueError:
+                display_target = target_path.as_posix()
+
         # tkinter Double/String Variables
-        self.obsidian_root_var = tk.StringVar(value=self.config.get('OBSIDIAN_ROOT', ''))
-        self.target_dir_var = tk.StringVar(value=self.config.get('TARGET_DIR', ''))
+        self.target_dir_var = tk.StringVar(value=display_target)
         self.operation_var = tk.StringVar(value=self.config.get('OPERATION', 'add').title())
         self.tag_var = tk.StringVar(value=self.config.get('TAG', ''))
         self.property_key_var = tk.StringVar(value=self.config.get('PROPERTY_KEY', ''))
@@ -229,10 +245,25 @@ class ConfigGUI:
         ttk.Button(btn_frame, text="Save Only", command=self.save, width=15).pack(side=tk.RIGHT, padx=5)
 
     def browse_target(self):
-        # Open directory browser
-        d = filedialog.askdirectory(initialdir=self.target_dir_var.get(), title="Select Target Directory")
+        obs_root_path = Path(self.obsidian_root_var.get())
+        current_target = self.target_dir_var.get()
+        target_path = Path(current_target)
+        
+        if not target_path.is_absolute():
+            initial = (obs_root_path / target_path).as_posix()
+        else:
+            initial = target_path.as_posix() if current_target else obs_root_path.as_posix()
+            
+        d = filedialog.askdirectory(initialdir=initial, title="Select Target Directory")
         if d:
-            self.target_dir_var.set(d.replace('/', '\\\\'))
+            d_path = Path(d)
+            try:
+                rel_path = d_path.relative_to(obs_root_path).as_posix()
+                if rel_path == '.':
+                    rel_path = ""
+                self.target_dir_var.set(rel_path)
+            except ValueError:
+                self.target_dir_var.set(d_path.as_posix())
 
     def run_main(self):
         self.save()
@@ -257,10 +288,21 @@ class ConfigGUI:
             messagebox.showerror("Execution Error", f"Failed to run main.py: {e}")
 
     def save(self):
+        obs_root_str = self.obsidian_root_var.get().replace('\\', '/').replace('//', '/')
+        target_display = self.target_dir_var.get().replace('\\', '/').replace('//', '/')
+        
+        target_path_obj = Path(target_display) if target_display else Path("")
+        obs_root_path = Path(obs_root_str) if obs_root_str else None
+        
+        if target_path_obj.is_absolute():
+            full_target = target_path_obj.as_posix()
+        else:
+            full_target = (obs_root_path / target_path_obj).as_posix() if obs_root_path else target_path_obj.as_posix()
+
         # Prevent completely empty tags where None is more appropriate
         config_to_save = {
-            'OBSIDIAN_ROOT': self.obsidian_root_var.get().replace("\\", "\\\\").replace("\\\\\\\\", "\\\\"),  
-            'TARGET_DIR': self.target_dir_var.get().replace("\\", "\\\\").replace("\\\\\\\\", "\\\\"),
+            'OBSIDIAN_ROOT': obs_root_str,  
+            'TARGET_DIR': full_target,
             'OPERATION': self.operation_var.get().lower(),
             'TAG': self.tag_var.get().strip() or "",
             'PROPERTY_KEY': self.property_key_var.get().strip(),
@@ -273,11 +315,6 @@ class ConfigGUI:
             'REMOVE_ALL_TAGS': self.remove_all_tags_var.get(),
             'REMOVE_ALL_PROPERTIES': self.remove_all_props_var.get(),
         }
-        # A little fix on the backslash replace: Let's sanitize to ensure single forward slashes OR raw string behavior isn't messed up
-        obs_root = self.obsidian_root_var.get()
-        # It's cleaner to handle paths without double backslashing string manually if we just format it directly
-        config_to_save['OBSIDIAN_ROOT'] = obs_root.replace('\\', '/')
-        config_to_save['TARGET_DIR'] = self.target_dir_var.get().replace('\\', '/')
         
         save_config(config_to_save)
         self.status_label.config(text="Configuration Saved!")
